@@ -8,7 +8,7 @@
 
 <img src="https://github.com/proyecto26/sherlock-ai-plugin/blob/main/images/claude-mascot-jumping-animated.svg" width="150">
 
-[![Watch the video](https://raw.githubusercontent.com/proyecto26/slides-ai-plugin/gh-pages/slides-ai-plugin-thumbnail.png)](https://raw.githubusercontent.com/proyecto26/slides-ai-plugin/gh-pages/slides-ai-plugin.mp4)
+https://github.com/user-attachments/assets/3c7250dd-59d7-4eea-835b-12a3c0871bb3
 
 **Turn any idea, outline, or existing deck into a professional presentation — straight from Claude Code.** Generate animated HTML decks (GSAP + CSS, single-file, viewport-fitted) or fully editable PowerPoint (`.pptx`) files with 12 curated style presets, adaptive typography, layout validation, and speaker notes — just ask Claude.
 
