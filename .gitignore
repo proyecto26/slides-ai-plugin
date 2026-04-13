@@ -1,3 +1,6 @@
 tests/
 evals/
 templates/
+
+# macOS
+.DS_Store

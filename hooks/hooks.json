@@ -1,0 +1,29 @@
+{
+  "description": "Slide generation validation hooks for slides-ai-plugin",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Check if the file just written is a .pptx or .html presentation file. If it is a .pptx file, verify: (1) the generation script included h.validateDeck() before saving, (2) speaker notes are mentioned in the script. If it is an .html file, verify: (1) it includes viewport-fitting CSS (100vh/100dvh), (2) it includes prefers-reduced-motion support, (3) font sizes use clamp() not fixed values. If the file is not a presentation, return 'approve' immediately. Return 'approve' if checks pass, or a systemMessage with specific issues found.",
+            "timeout": 20
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "If the current task involved creating slides or a presentation, verify before stopping: (1) output files were generated (.pptx and/or .html), (2) speaker notes are present on content slides, (3) the user was shown the output file path. If the task was not slide-related, approve immediately. Return 'approve' to stop or 'block' with reason if slides were requested but not fully delivered.",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,6 +1,6 @@
 {
   "name": "slides-ai-plugin",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Professional presentation generator for HTML (with GSAP animations) and PPTX formats. Creates conference talks, pitch decks and tech presentations with curated style presets and validation.",
   "author": {
     "name": "Proyecto 26",

@@ -1,296 +1,440 @@
 # PptxGenJS Helper Functions Reference
 
-API reference for the PptxGenJS helper library used in programmatic PowerPoint generation.
+Complete API reference for bundled PptxGenJS TypeScript helper modules. Run via `npx -y bun`. All measurements in inches unless specified otherwise.
 
-## Setup
+## Quick Import
 
-```javascript
-const pptxgen = require('pptxgenjs');
-const pptx = new pptxgen();
-
-// Set defaults
-pptx.defineSection({ title: 'Main' });
-pptx.layout = 'LAYOUT_WIDE'; // 13.33" x 7.5" (or use LAYOUT_16x9 for 10" x 5.625")
+```typescript
+import pptxgen from 'pptxgenjs';
+import * as h from '${CLAUDE_PLUGIN_ROOT}/skills/pptx-slides/scripts/main.ts';
 ```
 
-## Slide Dimensions
-
-```javascript
-function getSlideDimensions(slide, pptx) {
-  // Returns { width, height } in inches
-  // Handles EMU to inch conversion
-  const layout = pptx.layout;
-  if (layout === 'LAYOUT_WIDE') return { width: 13.33, height: 7.5 };
-  if (layout === 'LAYOUT_16x9') return { width: 10, height: 5.625 };
-  if (layout === 'LAYOUT_4x3') return { width: 10, height: 7.5 };
-  return { width: 10, height: 5.625 }; // default
-}
+Or run CLI commands directly:
+```bash
+npx -y bun ${CLAUDE_PLUGIN_ROOT}/skills/pptx-slides/scripts/main.ts theme list
+npx -y bun ${CLAUDE_PLUGIN_ROOT}/skills/pptx-slides/scripts/main.ts validate <deck.pptx>
 ```
 
-## Text Measurement
+---
 
-### measureText
+## text.ts
 
-Measure text dimensions using skia-canvas for font-aware precision:
-
-```javascript
-const { Canvas } = require('skia-canvas');
-
-function measureText(text, fontFamily, fontSize) {
-  const canvas = new Canvas(1, 1);
-  const ctx = canvas.getContext('2d');
-  ctx.font = `${fontSize}pt ${fontFamily}`;
-  const metrics = ctx.measureText(text);
-  return {
-    width: metrics.width / 72, // Convert to inches
-    height: fontSize / 72      // Approximate height
-  };
-}
-```
-
-### autoFontSize
-
-Binary search for optimal font size to fit text in a box:
-
-```javascript
-function autoFontSize(text, box, fontFamily, options = {}) {
-  const { minSize = 10, maxSize = 72, mode = 'shrink' } = options;
-  let low = minSize;
-  let high = maxSize;
-
-  while (high - low > 0.5) {
-    const mid = (low + high) / 2;
-    const measured = measureText(text, fontFamily, mid);
-    if (measured.width <= box.width && measured.height <= box.height) {
-      low = mid; // Can go bigger
-    } else {
-      high = mid; // Too big
-    }
-  }
-
-  return mode === 'shrink' ? Math.min(low, maxSize) : low;
-}
-```
+Text measurement and font sizing utilities.
 
 ### calcTextBoxHeightSimple
 
-Analytical height calculation for a text box:
-
-```javascript
-function calcTextBoxHeightSimple(text, widthInches, fontSize, leading = 1.2) {
-  const charsPerLine = Math.floor(widthInches * 72 / (fontSize * 0.6)); // Approximate
-  const lines = Math.ceil(text.length / charsPerLine);
-  const lineHeight = (fontSize / 72) * leading;
-  return lines * lineHeight;
-}
+```typescript
+calcTextBoxHeightSimple(fontSize: number, lines?: number, leading?: number, padding?: number): number
 ```
 
-## Layout Builders
+Returns: `number` - Height in inches
+Analytical height calculation for a text box given font size and line count.
+Example: `h.calcTextBoxHeightSimple(14, 2, 1.2, 0.3)` // 0.65 inches
 
-### addImageTextCard
+### calcTextBox
 
-Create an image + caption card component:
-
-```javascript
-function addImageTextCard(slide, options) {
-  const { x, y, w, h, imagePath, title, description, imageHeight = 0.6 } = options;
-  const imgH = h * imageHeight;
-  const textH = h - imgH - 0.1;
-
-  slide.addImage({ path: imagePath, x, y, w, h: imgH, sizing: { type: 'contain' } });
-  slide.addText(title, {
-    x, y: y + imgH + 0.05, w, h: 0.4,
-    fontSize: 14, bold: true, align: 'center'
-  });
-  if (description) {
-    slide.addText(description, {
-      x, y: y + imgH + 0.45, w, h: textH - 0.45,
-      fontSize: 11, color: '666666', align: 'center'
-    });
-  }
-}
+```typescript
+calcTextBox(fontSizePt: number, opts?: TextBoxOpts): TextBoxLayout
 ```
 
-### addCardRow
+Returns: `TextBoxLayout` - `{ w, h, lines, contentH, margins, topInset }`
+Comprehensive text box measurement with mode-based layout (by lines, width, or height).
+Example: `h.calcTextBox(14, { text: 'Hello', fontFace: 'Arial', w: 4 })`
 
-Row of cards with auto-spacing:
+### autoFontSize
 
-```javascript
-function addCardRow(slide, cards, region, options = {}) {
-  const { gap = 0.2, align = 'center' } = options;
-  const cardWidth = (region.w - gap * (cards.length - 1)) / cards.length;
-
-  cards.forEach((card, i) => {
-    const x = region.x + i * (cardWidth + gap);
-    addImageTextCard(slide, {
-      x, y: region.y, w: cardWidth, h: region.h,
-      ...card
-    });
-  });
-}
+```typescript
+autoFontSize(textOrRuns: string | TextRun[], fontFace: string, opts?: AutoFontSizeOpts): AutoFontSizeOpts
 ```
 
-### addTimeline
+Returns: `AutoFontSizeOpts` - Options object with computed fontSize
+Binary search for optimal font size to fit text in a box. Modes: 'shrink', 'enlarge', 'auto'.
+Example: `h.autoFontSize('Long text', 'Arial', { w: 3, h: 1.5, mode: 'shrink' })`
 
-Horizontal timeline with markers:
+### scale
 
-```javascript
-function addTimeline(slide, milestones, region) {
-  const { x, y, w, h } = region;
-  const lineY = y + h * 0.4;
-  const spacing = w / (milestones.length - 1 || 1);
-
-  // Draw horizontal line
-  slide.addShape(pptx.shapes.LINE, {
-    x, y: lineY, w, h: 0,
-    line: { color: '4a9eff', width: 2 }
-  });
-
-  milestones.forEach((m, i) => {
-    const mx = x + i * spacing;
-
-    // Marker circle
-    slide.addShape(pptx.shapes.OVAL, {
-      x: mx - 0.08, y: lineY - 0.08, w: 0.16, h: 0.16,
-      fill: { color: '4a9eff' }
-    });
-
-    // Year/label above
-    slide.addText(m.label, {
-      x: mx - 0.5, y: lineY - 0.5, w: 1, h: 0.35,
-      fontSize: 12, bold: true, align: 'center'
-    });
-
-    // Description below
-    slide.addText(m.description, {
-      x: mx - 0.6, y: lineY + 0.15, w: 1.2, h: 0.5,
-      fontSize: 10, color: '666666', align: 'center'
-    });
-  });
-}
+```typescript
+scale(min: number, max: number, density?: { bullets?: number; textLength?: number }): number
 ```
 
-## Validation Functions
+Returns: `number` - Scaled font size value (PPTX equivalent of CSS `clamp()`)
+Example: `h.scale(theme.size.title.min, theme.size.title.max, { bullets: 0, textLength: title.length })`
+
+---
+
+## theme.ts
+
+Theme creation and management with 12 curated presets.
+
+### createTheme
+
+```typescript
+createTheme(overrides?: Partial<ThemeConfig>): SlideTheme
+```
+
+Returns: `SlideTheme` - Frozen theme object with all properties resolved
+Create a new theme by merging overrides with default theme.
+Example: `const theme = h.createTheme({ accent: 'ff0000' })`
+
+### PRESETS
+
+```typescript
+PRESETS: Record<string, ThemeConfig>
+```
+
+Available presets: darkMonospace, swissModern, boldSignal, darkBotanical, cleanCorporate, neonCyber, warmMinimal, vintageEditorial, terminalGreen, gradientWave, midnightBlue, paperInk.
+Use with `h.createTheme(h.PRESETS.swissModern)` to apply a preset.
+
+### sectionBackground
+
+```typescript
+sectionBackground(slideIndex: number, sectionMap: Record<string, string>, colors: Record<string, ColorHex>): ColorHex
+```
+
+Returns: `ColorHex` - Hex color code for the slide's section
+Determine background color for a slide based on section mapping.
+Example: `h.sectionBackground(5, { '0-3': 'primary', '4-10': 'secondary' }, { primary: '0a0a0a', secondary: '1a1a1a' })`
+
+### resolveFont
+
+```typescript
+resolveFont(theme: SlideTheme, role: 'heading' | 'body' | 'mono'): string
+```
+
+Returns: `string` - Font family with fallback chain
+Example: `h.resolveFont(theme, 'heading')` // 'Clash Display, Arial'
+
+---
+
+## layout.ts
+
+Slide layout and element positioning utilities.
+
+### inferElementType
+
+```typescript
+inferElementType(obj: any): string
+```
+
+Returns: `string` - Type name ('text', 'image', 'shape', 'line', 'chart', 'table', etc.)
+Example: `h.inferElementType(slideObjects[0])` // 'text'
 
 ### warnIfSlideHasOverlaps
 
-Detect overlapping elements with geometry analysis:
-
-```javascript
-function warnIfSlideHasOverlaps(slide) {
-  const elements = slide._slideObjects || [];
-  const warnings = [];
-
-  for (let i = 0; i < elements.length; i++) {
-    for (let j = i + 1; j < elements.length; j++) {
-      const a = elements[i].options;
-      const b = elements[j].options;
-      if (!a || !b) continue;
-
-      const overlap = !(
-        a.x + a.w <= b.x ||
-        b.x + b.w <= a.x ||
-        a.y + a.h <= b.y ||
-        b.y + b.h <= a.y
-      );
-
-      if (overlap) {
-        warnings.push({
-          elementA: i,
-          elementB: j,
-          message: `Elements ${i} and ${j} overlap at (${a.x},${a.y}) and (${b.x},${b.y})`
-        });
-      }
-    }
-  }
-
-  return warnings;
-}
+```typescript
+warnIfSlideHasOverlaps(slide: any, pptx: any, options?: OverlapWarningOpts): void
 ```
+
+Detect and report overlapping elements with detailed geometry analysis.
+Example: `h.warnIfSlideHasOverlaps(slide, pptx, { muteContainment: true })`
 
 ### warnIfSlideElementsOutOfBounds
 
-Check elements stay within slide boundaries:
-
-```javascript
-function warnIfSlideElementsOutOfBounds(slide, pptx) {
-  const dims = getSlideDimensions(slide, pptx);
-  const elements = slide._slideObjects || [];
-  const warnings = [];
-
-  elements.forEach((el, i) => {
-    const o = el.options;
-    if (!o || o.x === undefined) return;
-
-    if (o.x < 0 || o.y < 0 || o.x + o.w > dims.width || o.y + o.h > dims.height) {
-      warnings.push({
-        element: i,
-        message: `Element ${i} extends beyond slide bounds: (${o.x}, ${o.y}, ${o.w}x${o.h}) vs slide (${dims.width}x${dims.height})`
-      });
-    }
-  });
-
-  return warnings;
-}
+```typescript
+warnIfSlideElementsOutOfBounds(slide: any, pptx: any): void
 ```
 
-## Image Helpers
+Check that all slide elements stay within slide boundaries.
 
-### imageSizingContain
+### alignSlideElements
 
-Contain image within bounds preserving aspect ratio:
-
-```javascript
-function imageSizingContain(maxWidth, maxHeight, imgWidth, imgHeight) {
-  const ratio = Math.min(maxWidth / imgWidth, maxHeight / imgHeight);
-  return {
-    w: imgWidth * ratio,
-    h: imgHeight * ratio,
-    type: 'contain'
-  };
-}
+```typescript
+alignSlideElements(slide: any, indices: number[], alignment: string): void
 ```
+
+Align selected slide elements. Alignments: 'left', 'right', 'top', 'bottom', 'horizontallyCenter', 'verticallyCenter'.
+Example: `h.alignSlideElements(slide, [0, 1, 2], 'horizontallyCenter')`
+
+### distributeSlideElements
+
+```typescript
+distributeSlideElements(slide: any, indices: number[], direction: 'horizontal' | 'vertical'): void
+```
+
+Distribute selected elements evenly.
+Example: `h.distributeSlideElements(slide, [0, 1, 2, 3], 'horizontal')`
+
+### getSlideDimensions
+
+```typescript
+getSlideDimensions(slide: any, pptx: any): SlideDimensions
+```
+
+Returns: `SlideDimensions` - `{ width, height, source }`
+Detect slide dimensions from PptxGenJS internals.
+Example: `const { width, height } = h.getSlideDimensions(slide, pptx)` // { width: 10, height: 5.625 }
+
+---
+
+## layout_builders.ts
+
+High-level slide layout components.
+
+### addImageTextCard
+
+```typescript
+addImageTextCard(slide: any, opts?: CardRowOpts): void
+```
+
+Create an image + caption card. Opts: `x, y, width, gap, image { path, data, boxHeight, sizing, crop }, text, textBox`.
+Example: `h.addImageTextCard(slide, { x: 0.5, y: 0.5, width: 3, image: { path: 'photo.jpg', boxHeight: 2 }, text: 'Caption' })`
+
+### addCardRow
+
+```typescript
+addCardRow(slide: any, cards: CardRowOpts[], region: { x: number; y: number; w: number; h: number }, options?: { gap?: number }): void
+```
+
+Row of image-text cards with auto-spacing.
+Example: `h.addCardRow(slide, [{ image: {...}, text: 'A' }, {...}], { x: 0.5, y: 1, w: 9, h: 2 })`
+
+### addThreeLevelTree
+
+```typescript
+addThreeLevelTree(slide: any, opts: { x: number; y: number; w: number; h: number; theme: SlideTheme; root: { title: string; children: any[] } }): void
+```
+
+Hierarchical tree layout with three levels.
+
+### addFeatureGrid
+
+```typescript
+addFeatureGrid(slide: any, opts: FeatureGridOpts & { cols?: number; rows?: number; theme: SlideTheme }): void
+```
+
+Grid layout for features (max 6 cards).
+Example: `h.addFeatureGrid(slide, { x: 0.5, y: 1.2, w: 9, h: 3.8, cols: 3, rows: 2, features: [...] })`
+
+### addComparisonTable
+
+```typescript
+addComparisonTable(slide: any, opts: ComparisonTableOpts & { theme: SlideTheme }): void
+```
+
+Side-by-side comparison layout.
+
+### addMetricsRow
+
+```typescript
+addMetricsRow(slide: any, opts: MetricsRowOpts & { theme: SlideTheme }): void
+```
+
+Horizontal metrics cards with large numbers and labels.
+
+### addTimeline
+
+```typescript
+addTimeline(slide: any, opts: TimelineOpts & { theme: SlideTheme }): void
+```
+
+Horizontal timeline with markers and descriptions.
+
+---
+
+## decorative.ts
+
+Decorative slide elements and styling.
+
+### addStaircase
+
+```typescript
+addStaircase(slide: any, opts?: StaircaseOpts): void
+```
+
+Diagonal staircase pattern. Opts: `position ('bottom-right'), color, steps, stepWidth, stepHeight, opacity`.
+Example: `h.addStaircase(slide, { position: 'bottom-right', color: '4a9eff', steps: 4 })`
+
+### addSectionBadge
+
+```typescript
+addSectionBadge(slide: any, text: string, position: BadgeOpts, theme: SlideTheme): void
+```
+
+Small badge label.
+Example: `h.addSectionBadge(slide, 'NEW', { x: 0.5, y: 0.3 }, theme)`
+
+### addProgressBar
+
+```typescript
+addProgressBar(slide: any, current: number, total: number, theme: SlideTheme, opts?: ProgressBarOpts): void
+```
+
+Progress bar showing current/total.
+Example: `h.addProgressBar(slide, 3, 10, theme, { position: 'bottom', height: 0.04 })`
+
+### addSectionDivider
+
+```typescript
+addSectionDivider(slide: any, heading: string, theme: SlideTheme): void
+```
+
+Full-slide section break using theme background colors.
+
+### addSlideNumber
+
+```typescript
+addSlideNumber(slide: any, number: number, total: number, theme: SlideTheme, opts?: { x?: number; y?: number; w?: number; h?: number }): void
+```
+
+Slide counter in corner.
+Example: `h.addSlideNumber(slide, 5, 25, theme, { x: 9.2, y: 5.2 })`
+
+---
+
+## validation.ts
+
+Deck-level validation and diagnostics.
+
+### validateDeck
+
+```typescript
+validateDeck(pptx: any, opts?: Record<string, any>): ValidationReport
+```
+
+Returns: `ValidationReport` - `{ passed, issues, warnings, stats }`
+Validate entire presentation. Checks: font sizes (14pt min), bullet counts (6 max), bounds, speaker notes.
+Example: `const report = h.validateDeck(pptx); console.log(report.issues)`
+
+---
+
+## code.ts
+
+Syntax-highlighted code formatting.
+
+### codeToRuns
+
+```typescript
+codeToRuns(code: string, lang?: string): CodeRun[]
+```
+
+Returns: `CodeRun[]` - Array of text runs with syntax highlighting
+Convert code string to syntax-highlighted text runs for PptxGenJS.
+Example: `const runs = h.codeToRuns('const x = 1;', 'javascript')`
+
+### buildThemeMap
+
+```typescript
+buildThemeMap(themeCssModule?: string): Record<string, string>
+```
+
+Returns: Token type to color mapping from Prism.js theme CSS.
+
+---
+
+## image.ts
+
+Image handling and sizing utilities.
+
+### getImageDimensions
+
+```typescript
+getImageDimensions(source: string | Buffer): ImageDimensions
+```
+
+Returns: `ImageDimensions` - `{ width, height, aspectRatio, type }`
+Read image dimensions from file path, data URI, or buffer. Auto-detects PNG, JPEG, GIF, WebP, SVG.
+Example: `const dims = h.getImageDimensions('photo.jpg')` // { width: 1920, height: 1080, aspectRatio: 1.778 }
 
 ### imageSizingCrop
 
-Crop image to fill bounds:
-
-```javascript
-function imageSizingCrop(targetWidth, targetHeight) {
-  return {
-    w: targetWidth,
-    h: targetHeight,
-    type: 'cover'
-  };
-}
+```typescript
+imageSizingCrop(source: string | Buffer, x: number, y: number, w: number, h: number, cx?: number, cy?: number, cw?: number, ch?: number): ImageSizingCropResult
 ```
 
-## Alignment Utilities
+Create crop sizing to fill bounds. Crop center (cx, cy) and crop box (cw, ch) optional.
 
-```javascript
-function alignSlideElements(elements, axis, alignment) {
-  if (axis === 'x') {
-    const ref = alignment === 'left' ? Math.min(...elements.map(e => e.x))
-              : alignment === 'right' ? Math.max(...elements.map(e => e.x + e.w))
-              : elements.reduce((s, e) => s + e.x + e.w / 2, 0) / elements.length;
+### imageSizingContain
 
-    elements.forEach(e => {
-      if (alignment === 'left') e.x = ref;
-      else if (alignment === 'right') e.x = ref - e.w;
-      else e.x = ref - e.w / 2;
-    });
-  }
-  // Similar for y axis
-}
-
-function distributeSlideElements(elements, axis) {
-  if (elements.length < 3) return;
-  const sorted = [...elements].sort((a, b) => a[axis] - b[axis]);
-  const totalSpan = sorted[sorted.length - 1][axis] - sorted[0][axis];
-  const spacing = totalSpan / (elements.length - 1);
-
-  sorted.forEach((el, i) => {
-    el[axis] = sorted[0][axis] + i * spacing;
-  });
-}
+```typescript
+imageSizingContain(source: string | Buffer, x: number, y: number, w: number, h: number): ImageSizingContainResult
 ```
+
+Create contain sizing to fit within bounds preserving aspect ratio.
+
+---
+
+## svg.ts
+
+SVG utilities and data URI conversion.
+
+### svgToDataUri
+
+```typescript
+svgToDataUri(svg: string): string
+```
+
+Sanitize SVG and convert to base64 data URI in one step.
+Example: `const uri = h.svgToDataUri('<svg>...</svg>')`
+
+### sanitizeSvg
+
+```typescript
+sanitizeSvg(svg: string): string
+```
+
+Clean and normalize SVG: add xmlns, remove XML declaration, convert em/ex units to px, replace currentColor.
+
+---
+
+## util.ts
+
+Utility functions for color, unit, and shadow handling.
+
+### safeOuterShadow
+
+```typescript
+safeOuterShadow(color?: ColorHex, opacity?: number, angle?: number, blur?: number, offset?: number): ShadowConfig
+```
+
+Create a safe outer shadow object for slide elements.
+Example: `h.safeOuterShadow('000000', 0.2, 45, 3, 2)`
+
+### inchesToEmu
+
+```typescript
+inchesToEmu(inches: number): number
+```
+
+Convert inches to English Metric Units (914400 per inch).
+
+### emuToInches
+
+```typescript
+emuToInches(emu: number): number
+```
+
+Convert EMU to inches.
+
+### normalizeColor
+
+```typescript
+normalizeColor(color: string): ColorHex
+```
+
+Validate and normalize hex color string (strips `#` prefix).
+Example: `h.normalizeColor('#4a9eff')` // '4a9eff'
+
+### clampValue
+
+```typescript
+clampValue(value: number, min: number, max: number): number
+```
+
+Constrain a value between min and max.
+
+---
+
+## TypeScript Types
+
+All shared types are defined in `scripts/types.ts`. Key interfaces:
+
+- `SlideTheme` — Fully resolved theme with bg, text, accent, font, size, spacing, radius, shadow
+- `ThemeConfig` — Partial theme for overrides / presets
+- `ValidationReport` — `{ passed, issues, warnings, stats }`
+- `ValidationIssue` — `{ slide, type, message, severity }`
+- `AutoFontSizeOpts` — Options for text fitting (w, h, mode, minFontSize, maxFontSize)
+- `TextBoxLayout` — Calculated text box dimensions
+- `ImageDimensions` — `{ width, height, aspectRatio, type }`
+- `StaircaseOpts`, `BadgeOpts`, `ProgressBarOpts` — Decorative element options
+- `FeatureGridOpts`, `CardRowOpts`, `TimelineOpts`, `MetricsRowOpts`, `ComparisonTableOpts` — Layout builder options
+- `ColorHex`, `InchesUnit`, `PointsUnit` — Branded type aliases

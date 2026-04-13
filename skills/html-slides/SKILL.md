@@ -1,7 +1,7 @@
 ---
 name: html-slides
-description: This skill should be used when the user asks to "create HTML slides", "generate an HTML presentation", "make animated slides", "build interactive slides", "create web slides", "GSAP presentation", "browser-based slides", "convert PPTX to HTML", "animated deck", "reveal.js slides", or when the output format is HTML for any presentation task. Also triggers on "single-file presentation", "CSS animations in slides", "scroll-based slides", or "web presentation". Generates self-contained, single-file HTML with viewport fitting, CSS/GSAP animations, and curated style presets.
-version: 0.2.0
+description: Used when the user asks to "create HTML slides", "generate an HTML presentation", "make animated slides", "build interactive slides", "create web slides", "GSAP presentation", "browser-based slides", "convert PPTX to HTML", "animated deck", "reveal.js slides", or when the output format is HTML for any presentation task. Also triggers on "single-file presentation", "CSS animations in slides", "scroll-based slides", or "web presentation". Generates self-contained, single-file HTML with viewport fitting, CSS/GSAP animations, and curated style presets.
+version: 0.2.1
 ---
 
 # HTML Slides — Animated, Viewport-Fitted Presentations
