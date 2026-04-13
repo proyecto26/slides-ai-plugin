@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Slides AI Plugin — Watch the 36-second showcase</title>
+  <meta name="description" content="Turn any idea, outline, or existing deck into a professional presentation — straight from Claude Code, OpenCode, Cursor, or Codex. A 36-second showcase of the slides-ai-plugin.">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="video.other">
+  <meta property="og:title" content="Slides AI Plugin — One prompt, animated deck">
+  <meta property="og:description" content="Turn any idea into a professional HTML + PPTX presentation, straight from your AI coding tool. 12 style presets · 15 slide types · zero build steps.">
+  <meta property="og:url" content="https://proyecto26.com/slides-ai-plugin/video.html">
+  <meta property="og:image" content="https://proyecto26.com/slides-ai-plugin/slides-ai-plugin-thumbnail.png">
+  <meta property="og:image:width" content="1920">
+  <meta property="og:image:height" content="1080">
+  <meta property="og:video" content="https://proyecto26.com/slides-ai-plugin/slides-ai-plugin.mp4">
+  <meta property="og:video:secure_url" content="https://proyecto26.com/slides-ai-plugin/slides-ai-plugin.mp4">
+  <meta property="og:video:type" content="video/mp4">
+  <meta property="og:video:width" content="1920">
+  <meta property="og:video:height" content="1080">
+  <meta property="og:site_name" content="proyecto26">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="player">
+  <meta name="twitter:site" content="@proyecto26">
+  <meta name="twitter:title" content="Slides AI Plugin — One prompt, animated deck">
+  <meta name="twitter:description" content="Turn any idea into a professional HTML + PPTX presentation, straight from your AI coding tool.">
+  <meta name="twitter:image" content="https://proyecto26.com/slides-ai-plugin/slides-ai-plugin-thumbnail.png">
+  <meta name="twitter:player" content="https://proyecto26.com/slides-ai-plugin/video.html">
+  <meta name="twitter:player:width" content="1920">
+  <meta name="twitter:player:height" content="1080">
+  <meta name="twitter:player:stream" content="https://proyecto26.com/slides-ai-plugin/slides-ai-plugin.mp4">
+  <meta name="twitter:player:stream:content_type" content="video/mp4">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Nunito+Sans:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-primary: #0f0c29;
+      --bg-secondary: #302b63;
+      --bg-tertiary: #24243e;
+      --text-primary: #ffffff;
+      --text-secondary: #b8b8d0;
+      --accent: #24c6dc;
+      --accent-secondary: #514a9d;
+      --font-heading: 'Sora', sans-serif;
+      --font-body: 'Nunito Sans', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+    body {
+      min-height: 100vh;
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      line-height: 1.5;
+      background:
+        radial-gradient(ellipse at 15% 20%, rgba(36, 198, 220, 0.18) 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 20%, rgba(81, 74, 157, 0.25) 0%, transparent 55%),
+        radial-gradient(ellipse at 50% 90%, rgba(36, 198, 220, 0.10) 0%, transparent 60%),
+        linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+      background-attachment: fixed;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: clamp(1.5rem, 4vw, 4rem);
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 1200px;
+      text-align: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: var(--font-mono);
+      font-size: clamp(0.7rem, 1vw, 0.85rem);
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+      padding: 0.4rem 1rem;
+      border: 1px solid rgba(36, 198, 220, 0.4);
+      border-radius: 99px;
+      background: rgba(36, 198, 220, 0.08);
+    }
+    .eyebrow::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 10px var(--accent);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.3); }
+    }
+
+    h1 {
+      font-family: var(--font-heading);
+      font-size: clamp(2rem, 5vw, 3.75rem);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, #ffffff 0%, #b8b8d0 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      font-family: var(--font-heading);
+      font-size: clamp(1rem, 1.8vw, 1.25rem);
+      font-weight: 400;
+      color: var(--text-secondary);
+      max-width: 700px;
+      margin: 0 auto 2.5rem;
+      line-height: 1.4;
+    }
+
+    .video-shell {
+      position: relative;
+      width: 100%;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.08);
+      background: #000;
+    }
+    video {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 9;
+    }
+
+    .actions {
+      margin-top: 2.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.85rem 1.6rem;
+      border-radius: 99px;
+      font-family: var(--font-heading);
+      font-weight: 600;
+      font-size: 1rem;
+      text-decoration: none;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.04);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s, background 0.3s;
+    }
+    .btn:hover { transform: translateY(-2px); border-color: var(--accent); background: rgba(36, 198, 220, 0.1); }
+    .btn.primary {
+      background: linear-gradient(135deg, #24c6dc 0%, #514a9d 100%);
+      border-color: transparent;
+      color: #ffffff;
+      box-shadow: 0 10px 30px rgba(36, 198, 220, 0.35);
+    }
+    .btn.primary:hover { box-shadow: 0 14px 40px rgba(36, 198, 220, 0.5); }
+
+    .meta {
+      margin-top: 3rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1.5rem 2.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+    }
+    .meta span strong { color: var(--accent); font-weight: 600; }
+
+    footer {
+      margin-top: auto;
+      padding-top: 3rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      opacity: 0.7;
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <span class="eyebrow">36-second showcase</span>
+    <h1>Slides AI Plugin</h1>
+    <p class="subtitle">
+      Turn any idea, outline, or existing deck into a professional presentation —
+      straight from Claude Code, OpenCode, Cursor, or Codex.
+    </p>
+
+    <div class="video-shell">
+      <video
+        src="slides-ai-plugin.mp4"
+        poster="slides-ai-plugin-thumbnail.png"
+        controls
+        preload="metadata"
+        playsinline
+      >
+        Sorry, your browser doesn't support embedded video.
+        <a href="slides-ai-plugin.mp4">Download the MP4</a> instead.
+      </video>
+    </div>
+
+    <div class="actions">
+      <a class="btn primary" href="https://github.com/proyecto26/slides-ai-plugin">
+        Get it on GitHub →
+      </a>
+      <a class="btn" href="./">Open the slide deck</a>
+      <a class="btn" href="slides-ai-plugin.mp4" download>Download MP4</a>
+    </div>
+
+    <div class="meta">
+      <span><strong>1920×1080</strong> · 30fps · 36s</span>
+      <span><strong>H.264</strong> + AAC · 8 MB</span>
+      <span><strong>12</strong> style presets</span>
+      <span><strong>2</strong> output formats</span>
+    </div>
+  </div>
+
+  <footer>
+    Made with ❤️ by <a href="https://proyecto26.com">Proyecto 26</a> ·
+    <a href="https://github.com/proyecto26/slides-ai-plugin">proyecto26/slides-ai-plugin</a>
+  </footer>
+</body>
+</html>
