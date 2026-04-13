@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Slides AI Plugin — Getting Started</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Nunito+Sans:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Prism.js theme for code highlighting -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+
+  <style>
+    /* === THEME VARIABLES (gradientWave base) === */
+    :root {
+      --bg-primary: #0f0c29;
+      --bg-secondary: #302b63;
+      --bg-tertiary: #24243e;
+      --text-primary: #ffffff;
+      --text-secondary: #b8b8d0;
+      --accent: #24c6dc;
+      --accent-secondary: #514a9d;
+      --accent-glow: rgba(36, 198, 220, 0.35);
+      --font-heading: 'Sora', sans-serif;
+      --font-body: 'Nunito Sans', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --title-size: clamp(2rem, 6vw, 5rem);
+      --body-size: clamp(0.9rem, 1.6vw, 1.2rem);
+      --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* === VIEWPORT BASE (from skill) === */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; scroll-behavior: smooth; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+    body {
+      overflow-x: hidden;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      line-height: 1.5;
+      scroll-snap-type: y mandatory;
+      height: 100vh; height: 100dvh;
+      overflow-y: scroll;
+    }
+
+    .slide {
+      width: 100vw;
+      height: 100vh; height: 100dvh;
+      overflow: hidden;
+      position: relative;
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      padding: clamp(1.5rem, 4vw, 4rem);
+      scroll-snap-align: start;
+      background:
+        radial-gradient(ellipse at 15% 30%, rgba(36, 198, 220, 0.18) 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 20%, rgba(81, 74, 157, 0.22) 0%, transparent 55%),
+        radial-gradient(ellipse at 50% 90%, rgba(36, 198, 220, 0.10) 0%, transparent 60%),
+        linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+      background-size: 200% 200%;
+      animation: gradientDrift 24s ease infinite;
+    }
+
+    @keyframes gradientDrift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    /* Dark monospace theme override for code/dev slides */
+    .slide[data-theme="mono"] {
+      background: #0d1117;
+      animation: none;
+    }
+    .slide[data-theme="mono"] .slide-title { font-family: var(--font-mono); color: #e6edf3; }
+    .slide[data-theme="mono"] .slide-body { color: #c9d1d9; }
+    .slide[data-theme="mono"] .accent-text { color: #58a6ff; }
+
+    /* Grid pattern overlay for mono slides */
+    .slide[data-theme="mono"]::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(88, 166, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(88, 166, 255, 0.05) 1px, transparent 1px);
+      background-size: 50px 50px;
+      pointer-events: none;
+    }
+
+    /* Accent "light" slide for contrast */
+    .slide[data-theme="light"] {
+      background: linear-gradient(135deg, #24c6dc 0%, #514a9d 100%);
+      animation: none;
+    }
+
+    .slide-content {
+      width: 100%;
+      max-width: min(90vw, 1200px);
+      max-height: 100%;
+      overflow: hidden;
+      position: relative;
+      z-index: 2;
+    }
+
+    .slide-title {
+      font-family: var(--font-heading);
+      font-size: var(--title-size);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      margin-bottom: clamp(0.75rem, 2vw, 1.5rem);
+      background: linear-gradient(135deg, #ffffff 0%, #b8b8d0 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .slide[data-theme="mono"] .slide-title { -webkit-text-fill-color: initial; background: none; color: #e6edf3; }
+    .slide[data-theme="light"] .slide-title { -webkit-text-fill-color: initial; background: none; color: #0f0c29; }
+
+    .slide-subtitle {
+      font-family: var(--font-heading);
+      font-size: clamp(1rem, 2.3vw, 1.6rem);
+      font-weight: 400;
+      color: var(--text-secondary);
+      line-height: 1.35;
+      margin-bottom: clamp(0.75rem, 1.5vw, 1.25rem);
+    }
+
+    .slide-body {
+      font-size: var(--body-size);
+      line-height: 1.6;
+      color: var(--text-primary);
+    }
+
+    .slide-caption {
+      font-size: clamp(0.75rem, 1.1vw, 0.95rem);
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      letter-spacing: 0.05em;
+    }
+
+    /* Eyebrow label */
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: var(--font-mono);
+      font-size: clamp(0.7rem, 1vw, 0.85rem);
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--accent);
+      margin-bottom: clamp(0.75rem, 1.5vw, 1.25rem);
+      padding: 0.35rem 0.85rem;
+      border: 1px solid rgba(36, 198, 220, 0.4);
+      border-radius: 99px;
+      background: rgba(36, 198, 220, 0.08);
+    }
+    .eyebrow::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 10px var(--accent-glow);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.3); }
+    }
+
+    /* Cards */
+    .card {
+      background: rgba(255, 255, 255, 0.04);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: clamp(1rem, 2vw, 1.75rem);
+      transition: transform 0.4s var(--ease-out-expo), border-color 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent);
+    }
+    .card h3 {
+      font-family: var(--font-heading);
+      font-size: clamp(1rem, 1.6vw, 1.3rem);
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .card p {
+      font-size: clamp(0.8rem, 1.3vw, 1rem);
+      color: var(--text-secondary);
+      line-height: 1.55;
+    }
+    .card .card-num {
+      position: absolute;
+      top: 0.75rem; right: 1rem;
+      font-family: var(--font-mono);
+      font-size: clamp(1.5rem, 3vw, 2.5rem);
+      font-weight: 700;
+      color: rgba(36, 198, 220, 0.15);
+      line-height: 1;
+    }
+
+    /* Grids */
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: clamp(1rem, 2vw, 1.75rem); width: 100%; }
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: clamp(1rem, 1.75vw, 1.5rem); width: 100%; }
+    .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); gap: clamp(0.75rem, 1.5vw, 1.25rem); width: 100%; }
+
+    @media (max-width: 700px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+
+    /* Code blocks */
+    .code-block {
+      background: #0d1117;
+      border: 1px solid rgba(88, 166, 255, 0.2);
+      border-radius: 12px;
+      padding: clamp(1rem, 1.75vw, 1.5rem);
+      overflow: auto;
+      font-family: var(--font-mono);
+      font-size: clamp(0.75rem, 1.2vw, 1rem);
+      line-height: 1.65;
+      max-height: min(55vh, 420px);
+      position: relative;
+    }
+    .code-block::before {
+      content: '';
+      position: absolute; top: 0.75rem; left: 1rem;
+      display: flex; gap: 0.35rem;
+      width: 36px; height: 8px;
+      background:
+        radial-gradient(circle, #ff5f56 3px, transparent 3.5px) 0 50%/8px 8px no-repeat,
+        radial-gradient(circle, #ffbd2e 3px, transparent 3.5px) 14px 50%/8px 8px no-repeat,
+        radial-gradient(circle, #27c93f 3px, transparent 3.5px) 28px 50%/8px 8px no-repeat;
+    }
+    .code-block code { padding-top: 1.25rem; display: block; }
+    .code-prompt { color: #58a6ff; user-select: none; }
+    .code-comment { color: #8b949e; font-style: italic; }
+    .code-accent { color: #3fb950; }
+
+    /* Pills */
+    .pill {
+      display: inline-block;
+      padding: 0.4rem 0.9rem;
+      border-radius: 99px;
+      font-family: var(--font-mono);
+      font-size: clamp(0.7rem, 1.1vw, 0.85rem);
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-primary);
+      margin: 0.25rem;
+      transition: all 0.3s var(--ease-out-expo);
+    }
+    .pill:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+    .pill.highlight { background: var(--accent); color: var(--bg-primary); border-color: var(--accent); font-weight: 700; }
+
+    /* Preset swatches */
+    .swatch {
+      aspect-ratio: 16/10;
+      border-radius: 12px;
+      display: flex; flex-direction: column;
+      justify-content: flex-end;
+      padding: 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.4s var(--ease-out-expo);
+    }
+    .swatch:hover { transform: translateY(-4px) scale(1.02); }
+    .swatch-label {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: inherit;
+      font-weight: 700;
+      position: relative; z-index: 2;
+    }
+    .swatch-accent {
+      position: absolute;
+      top: 0.75rem; right: 0.75rem;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      box-shadow: 0 0 20px currentColor;
+    }
+
+    /* Step rail */
+    .step-rail { display: flex; flex-direction: column; gap: 1rem; width: 100%; }
+    .step {
+      display: grid;
+      grid-template-columns: 60px 1fr;
+      gap: 1.25rem;
+      align-items: center;
+      padding: 1rem 1.25rem;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border-left: 3px solid var(--accent);
+      transition: all 0.4s var(--ease-out-expo);
+    }
+    .step:hover { background: rgba(255, 255, 255, 0.06); transform: translateX(6px); }
+    .step-num {
+      font-family: var(--font-mono);
+      font-size: clamp(1.25rem, 2.5vw, 2rem);
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1;
+    }
+    .step-content h3 {
+      font-family: var(--font-heading);
+      font-size: clamp(0.95rem, 1.5vw, 1.2rem);
+      font-weight: 700;
+      margin-bottom: 0.2rem;
+    }
+    .step-content p {
+      font-size: clamp(0.8rem, 1.2vw, 0.95rem);
+      color: var(--text-secondary);
+    }
+
+    /* Metrics */
+    .metric {
+      text-align: center;
+      padding: 1rem;
+    }
+    .metric-num {
+      font-family: var(--font-heading);
+      font-size: clamp(2.5rem, 6vw, 5rem);
+      font-weight: 800;
+      line-height: 1;
+      background: linear-gradient(135deg, #24c6dc 0%, #514a9d 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.25rem;
+    }
+    .metric-label {
+      font-family: var(--font-mono);
+      font-size: clamp(0.75rem, 1.2vw, 0.95rem);
+      color: var(--text-secondary);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* CTA button */
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: clamp(0.9rem, 1.5vw, 1.2rem) clamp(1.5rem, 2.5vw, 2.5rem);
+      background: linear-gradient(135deg, #24c6dc 0%, #514a9d 100%);
+      color: #ffffff;
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: clamp(0.95rem, 1.5vw, 1.15rem);
+      border: none;
+      border-radius: 99px;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 10px 40px rgba(36, 198, 220, 0.4);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .cta:hover { transform: translateY(-2px); box-shadow: 0 14px 50px rgba(36, 198, 220, 0.6); }
+    .cta-arrow { transition: transform 0.3s; }
+    .cta:hover .cta-arrow { transform: translateX(4px); }
+
+    /* Progress bar */
+    .progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
+      transition: width 0.3s ease;
+      z-index: 100;
+      width: 0;
+    }
+
+    /* Nav dots */
+    .nav {
+      position: fixed;
+      right: 1.25rem;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex; flex-direction: column;
+      gap: 0.5rem;
+      z-index: 100;
+    }
+    .nav-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      padding: 0;
+    }
+    .nav-dot.active {
+      background: var(--accent);
+      transform: scale(1.5);
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+
+    /* Slide hint */
+    .slide-hint {
+      position: fixed;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      opacity: 0.6;
+      letter-spacing: 0.1em;
+      z-index: 100;
+      pointer-events: none;
+    }
+
+    /* Logo / brand mark */
+    .brand-mark {
+      position: absolute;
+      top: 1.5rem; left: 1.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      z-index: 10;
+    }
+    .brand-mark span { color: var(--accent); }
+
+    /* Hero visual (animated orb) */
+    .orb {
+      position: absolute;
+      width: clamp(300px, 50vw, 600px);
+      height: clamp(300px, 50vw, 600px);
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(36, 198, 220, 0.5), transparent 60%),
+        radial-gradient(circle at 70% 70%, rgba(81, 74, 157, 0.5), transparent 60%);
+      filter: blur(40px);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 0.7;
+      animation: orbFloat 12s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes orbFloat {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); }
+      50% { transform: translate(-45%, -55%) scale(1.1); }
+    }
+
+    /* Reveal animations */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.7s var(--ease-out-expo), transform 0.7s var(--ease-out-expo);
+    }
+    .reveal-scale { opacity: 0; transform: scale(0.95); transition: opacity 0.7s var(--ease-out-expo), transform 0.7s var(--ease-out-expo); }
+    .reveal-left { opacity: 0; transform: translateX(-30px); transition: opacity 0.7s var(--ease-out-expo), transform 0.7s var(--ease-out-expo); }
+    .reveal-blur { opacity: 0; filter: blur(12px); transition: opacity 0.9s var(--ease-out-expo), filter 0.9s var(--ease-out-expo); }
+    .reveal.visible, .reveal-scale.visible, .reveal-left.visible, .reveal-blur.visible {
+      opacity: 1; transform: none; filter: none;
+    }
+    .reveal:nth-child(1) { transition-delay: 0s; }
+    .reveal:nth-child(2) { transition-delay: 0.1s; }
+    .reveal:nth-child(3) { transition-delay: 0.2s; }
+    .reveal:nth-child(4) { transition-delay: 0.3s; }
+    .reveal:nth-child(5) { transition-delay: 0.4s; }
+    .reveal:nth-child(6) { transition-delay: 0.5s; }
+
+    /* Responsive breakpoints */
+    @media (max-height: 700px) {
+      .slide { padding: clamp(1rem, 2vw, 2rem); }
+      .slide-title { font-size: clamp(1.5rem, 5vw, 3rem); }
+      .eyebrow { margin-bottom: 0.75rem; }
+    }
+    @media (max-height: 600px) {
+      .slide-subtitle { display: none; }
+      .nav { display: none; }
+      .slide-hint { display: none; }
+    }
+    @media (max-height: 500px) {
+      .slide { padding: 0.75rem; }
+    }
+    @media (max-width: 600px) {
+      .brand-mark { display: none; }
+      .nav { display: none; }
+      .grid-3, .grid-4 { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .reveal, .reveal-scale, .reveal-left, .reveal-blur {
+        opacity: 1; transform: none; filter: none; transition: none;
+      }
+      .slide { animation: none; }
+      .orb { animation: none; }
+    }
+
+    @media print {
+      .slide { page-break-after: always; height: 100vh; overflow: hidden; animation: none; }
+      .nav, .progress-bar, .slide-hint { display: none; }
+      .reveal, .reveal-scale, .reveal-left, .reveal-blur { opacity: 1; transform: none; filter: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="progress-bar" id="progress"></div>
+  <div class="slide-hint">Use ↑ ↓ arrows · space · swipe</div>
+
+  <!-- === SLIDE 1: TITLE === -->
+  <section class="slide" id="slide-1">
+    <div class="orb"></div>
+    <div class="brand-mark">proyecto<span>26</span> · slides-ai-plugin</div>
+    <div class="slide-content" style="text-align: center;">
+      <span class="eyebrow reveal">Onboarding · v1.0</span>
+      <h1 class="slide-title reveal" data-split>Slides AI Plugin</h1>
+      <p class="slide-subtitle reveal">Turn any idea, outline, or existing deck into a<br>professional presentation — straight from your AI coding tool.</p>
+      <p class="slide-caption reveal" style="margin-top: 1.5rem;">Claude Code · OpenCode · Cursor · Codex</p>
+    </div>
+  </section>
+
+  <!-- === SLIDE 2: THE PROBLEM === -->
+  <section class="slide" id="slide-2">
+    <div class="brand-mark">01 · the problem</div>
+    <div class="slide-content">
+      <span class="eyebrow reveal">Why this exists</span>
+      <h2 class="slide-title reveal">Making slides is<br>slow, boring, and ugly.</h2>
+      <div class="grid-3" style="margin-top: clamp(1.5rem, 3vw, 2.5rem);">
+        <div class="card reveal">
+          <span class="card-num">01</span>
+          <h3>Wall of text</h3>
+          <p>Bullets nobody reads. Tiny fonts. No hierarchy.</p>
+        </div>
+        <div class="card reveal">
+          <span class="card-num">02</span>
+          <h3>AI slop aesthetics</h3>
+          <p>Purple gradients, Inter everywhere. Generic defaults.</p>
+        </div>
+        <div class="card reveal">
+          <span class="card-num">03</span>
+          <h3>Hours of fiddling</h3>
+          <p>Aligning boxes in PowerPoint. Fighting Keynote templates.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- === SLIDE 3: THE PROMISE === -->
+  <section class="slide" id="slide-3" data-theme="light">
+    <div class="slide-content" style="text-align: center; max-width: 900px;">
+      <p class="eyebrow reveal" style="color: #0f0c29; background: rgba(15, 12, 41, 0.12); border-color: rgba(15, 12, 41, 0.3);">The promise</p>
+      <blockquote class="reveal" style="font-family: var(--font-heading); font-size: clamp(1.75rem, 5vw, 3.5rem); font-weight: 700; line-height: 1.1; color: #0f0c29; letter-spacing: -0.02em;">
+        Just describe what you want.<br>
+        <span style="color: #ffffff;">Claude handles the rest.</span>
+      </blockquote>
+      <p class="reveal" style="margin-top: 2rem; color: rgba(15, 12, 41, 0.7); font-size: clamp(0.95rem, 1.5vw, 1.15rem);">
+        Content discovery · structure planning · style selection · generation · validation
+      </p>
+    </div>
+  </section>
+
+  <!-- === SLIDE 4: WHAT IT DOES === -->
+  <section class="slide" id="slide-4">
+    <div class="brand-mark">02 · what it does</div>
+    <div class="slide-content">
+      <span class="eyebrow reveal">The plugin</span>
+      <h2 class="slide-title reveal">One prompt →<br>animated deck.</h2>
+      <p class="slide-subtitle reveal" style="max-width: 800px;">
+        A Claude Code plugin that orchestrates the full workflow from raw idea to validated, production-ready presentation.
+      </p>
+      <div class="grid-4" style="margin-top: clamp(1.5rem, 3vw, 2.5rem);">
+        <div class="metric reveal">
+          <div class="metric-num">12</div>
+          <div class="metric-label">Style Presets</div>
+        </div>
+        <div class="metric reveal">
+          <div class="metric-num">15</div>
+          <div class="metric-label">Slide Types</div>
+        </div>
+        <div class="metric reveal">
+          <div class="metric-num">2</div>
+          <div class="metric-label">Output Formats</div>
+        </div>
+        <div class="metric reveal">
+          <div class="metric-num">0</div>
+          <div class="metric-label">Build Steps</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- === SLIDE 5: TWO FORMATS === -->
+  <section class="slide" id="slide-5">
+    <div class="brand-mark">03 · formats</div>
+    <div class="slide-content">
+      <span class="eyebrow reveal">HTML or PPTX · your call</span>
+      <h2 class="slide-title reveal" style="text-align: center;">Two formats.<br>One source of truth.</h2>
+      <div class="grid-2" style="margin-top: clamp(1.5rem, 3vw, 2.5rem);">
+        <div class="card reveal-left" style="border-top: 3px solid var(--accent);">
+          <h3 style="font-size: clamp(1.1rem, 2vw, 1.5rem);">⚡ HTML</h3>
+          <p style="margin-bottom: 0.75rem; color: var(--text-primary); font-weight: 600;">Single <code style="font-family: var(--font-mono); color: var(--accent);">.html</code> file · inline CSS/JS · no build</p>
+          <p>GSAP timelines · viewport-fitted · Mermaid diagrams · live <code style="color: var(--accent);">contenteditable</code> edit · single-file sharing.</p>
+          <p style="margin-top: 1rem; font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-secondary);">Best for: conference talks, live demos, web embeds</p>
+        </div>
+        <div class="card reveal" style="border-top: 3px solid var(--accent-secondary);">
+          <h3 style="font-size: clamp(1.1rem, 2vw, 1.5rem); color: var(--accent-secondary);">📊 PPTX</h3>
+          <p style="margin-bottom: 0.75rem; color: var(--text-primary); font-weight: 600;">Native OOXML <code style="font-family: var(--font-mono); color: var(--accent-secondary);">.pptx</code> · fully editable</p>
+          <p>PptxGenJS + skia-canvas text measurement · autoFontSize · native shapes · speaker notes · layout validators.</p>
+          <p style="margin-top: 1rem; font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-secondary);">Best for: offline sharing, corporate handoff, editing</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- === SLIDE 6: THE PIPELINE === -->
+  <section class="slide" id="slide-6">
+    <div class="brand-mark">04 · pipeline</div>
+    <div class="slide-content">
+      <span class="eyebrow reveal">Orchestrated workflow</span>
+      <h2 class="slide-title reveal">5 steps, automatic.</h2>
+      <div class="step-rail" style="margin-top: clamp(1rem, 2vw, 1.5rem);">
+        <div class="step reveal">
+          <span class="step-num">01</span>
+          <div class="step-content">
+            <h3>Content discovery</h3>
+            <p>Topic, audience, duration, tone — extracted from your prompt or prior files.</p>
+          </div>
+        </div>
+        <div class="step reveal">
+          <span class="step-num">02</span>
+          <div class="step-content">
+            <h3>Structure planning</h3>
+            <p>Duration-indexed slide count with typed templates (title, content, metrics, code...).</p>
+          </div>
+        </div>
+        <div class="step reveal">
+          <span class="step-num">03</span>
+          <div class="step-content">
+            <h3>Style selection</h3>
+            <p>Pick from 12 curated presets — or mix backgrounds across sections.</p>
+          </div>
+        </div>
+        <div class="step reveal">
+          <span class="step-num">04</span>
+          <div class="step-content">
+            <h3>Generation</h3>
+            <p>Delegates to <code style="font-family: var(--font-mono); color: var(--accent);">html-slides</code> or <code style="font-family: var(--font-mono); color: var(--accent);">pptx-slides</code> sub-skills.</p>
+          </div>
+        </div>
+        <div class="step reveal">
+          <span class="step-num">05</span>
+          <div class="step-content">
+            <h3>Validation</h3>
+            <p>Density limits, speaker notes, viewport fit, overlap detection — enforced via hooks.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- === SLIDE 7: INSTALL === -->
+  <section class="slide" id="slide-7" data-theme="mono">
+    <div class="brand-mark">05 · install</div>
+    <div class="slide-content">
+      <span class="eyebrow reveal" style="color: #58a6ff; border-color: rgba(88, 166, 255, 0.4); background: rgba(88, 166, 255, 0.08);">Get started in 30 seconds</span>
+      <h2 class="slide-title reveal">Install the plugin.</h2>
+      <p class="slide-subtitle reveal" style="color: #8b949e; font-family: var(--font-mono);">Four ways — pick what fits your setup.</p>
+      <div class="code-block reveal" style="margin-top: clamp(1rem, 2vw, 1.5rem);">
+<pre style="margin: 0;"><code><span class="code-comment"># Option 1 — CLI (recommended)</span>
+<span class="code-prompt">$</span> npx skills add proyecto26/slides-ai-plugin
+
+<span class="code-comment"># Option 2 — Claude Code marketplace</span>
+<span class="code-prompt">&gt;</span> /plugin marketplace add proyecto26/slides-ai-plugin
+<span class="code-prompt">&gt;</span> /plugin install slides-ai-plugin
+
+<span class="code-comment"># Option 3 — Git submodule</span>
+<span class="code-prompt">$</span> git submodule add https://github.com/proyecto26/slides-ai-plugin.git \
+    .claude/slides-ai-plugin
+
+<span class="code-comment"># Option 4 — Fork &amp; customize for your brand</span>
+<span class="code-prompt">$</span> gh repo fork proyecto26/slides-ai-plugin --clone</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- === SLIDE 8: FIRST DECK === -->
+  <section class="slide" id="slide-8" data-theme="mono">
+    <div class="brand-mark">06 · your first deck</div>
+    <div class="slide-content">
+      <span class="eyebrow reveal" style="color: #3fb950; border-color: rgba(63, 185, 80, 0.4); background: rgba(63, 185, 80, 0.08);">Zero ceremony</span>
+      <h2 class="slide-title reveal">Just describe. Ship.</h2>
+      <div class="code-block reveal" style="margin-top: clamp(1rem, 2vw, 1.5rem); background: #0d1117;">
+<pre style="margin: 0;"><code><span class="code-comment"># Inside Claude Code, OpenCode, Cursor, Codex...</span>
+
+<span class="code-prompt">&gt;</span> <span style="color: #e6edf3;">Create a 15-min conference talk about AI adoption</span>
+<span class="code-prompt">&gt;</span> <span style="color: #e6edf3;">for engineering teams — boldSignal style, both HTML and PPTX.</span>
+
+<span class="code-accent">✓</span> <span style="color: #8b949e;">slide-design skill triggers automatically</span>
+<span class="code-accent">✓</span> <span style="color: #8b949e;">content discovery → structure → style → generation → validation</span>
+<span class="code-accent">✓</span> <span style="color: #8b949e;">deck.html + deck.pptx delivered to cwd</span></code></pre>
+      </div>
+      <p class="reveal" style="text-align: center; margin-top: 1.5rem; color: #8b949e; font-family: var(--font-mono); font-size: 0.9rem;">
+        That's it. Hooks validate. Speaker notes included.
+      </p>
+    </div>
+  </section>
+
+  <!-- === SLIDE 9: STYLE PRESETS === -->
+  <section class="slide" id="slide-9">
+    <div class="brand-mark">07 · style presets</div>
+    <div class="slide-content">
+      <span class="eyebrow reveal">12 curated identities</span>
+      <h2 class="slide-title reveal">Pick a vibe.</h2>
+      <div class="grid-4" style="margin-top: clamp(1rem, 2vw, 1.5rem);">
+        <div class="swatch reveal-scale" style="background: #0d1117; color: #58a6ff;">
+          <div class="swatch-accent" style="color: #58a6ff; background: #58a6ff;"></div>
+          <span class="swatch-label">darkMonospace</span>
+        </div>
+        <div class="swatch reveal-scale" style="background: #ffffff; color: #ff3300;">
+          <div class="swatch-accent" style="color: #ff3300; background: #ff3300;"></div>
+          <span class="swatch-label">swissModern</span>
+        </div>
+        <div class="swatch reveal-scale" style="background: #0a0a0a; color: #ff6b35;">
+          <div class="swatch-accent" style="color: #ff6b35; background: #ff6b35;"></div>
+          <span class="swatch-label">boldSignal</span>
+        </div>
+        <div class="swatch reveal-scale" style="background: #1a1a1a; color: #c9b896;">
+          <div class="swatch-accent" style="color: #c9b896; background: #c9b896;"></div>
+          <span class="swatch-label">darkBotanical</span>
+        </div>
+        <div class="swatch reveal-scale" style="background: #ffffff; color: #4361ee;">
+          <div class="swatch-accent" style="color: #4361ee; background: #4361ee;"></div>
+          <span class="swatch-label">cleanCorporate</span>
+        </div>
+        <div class="swatch reveal-scale" style="background: #0a0a1a; color: #00f0ff;">
+          <div class="swatch-accent" style="color: #00f0ff; background: #00f0ff;"></div>
+          <span class="swatch-label">neonCyber</span>
+        </div>
+        <div class="swatch reveal-scale" style="background: #faf8f5; color: #c05c3c;">
+          <div class="swatch-accent" style="color: #c05c3c; background: #c05c3c;"></div>
+          <span class="swatch-label">warmMinimal</span>
+        </div>
+        <div class="swatch reveal-scale" style="background: #f5f0e8; color: #c41e3a;">
+          <div class="swatch-accent" style="color: #c41e3a; background: #c41e3a;"></div>
+          <span class="swatch-label">vintageEditorial</span>
+        </div>
+        <div class="swatch reveal-scale" style="background: #0a0a0a; color: #33ff33;">
+          <div class="swatch-accent" style="color: #33ff33; background: #33ff33;"></div>
+          <span class="swatch-label">terminalGreen</span>
+        </div>
+        <div class="swatch reveal-scale" style="background: linear-gradient(135deg, #0f0c29, #302b63); color: #24c6dc;">
+          <div class="swatch-accent" style="color: #24c6dc; background: #24c6dc;"></div>
+          <span class="swatch-label">gradientWave</span>
+        </div>
+        <div class="swatch reveal-scale" style="background: #1a1f36; color: #6366f1;">
+          <div class="swatch-accent" style="color: #6366f1; background: #6366f1;"></div>
+          <span class="swatch-label">midnightBlue</span>
+        </div>
+        <div class="swatch reveal-scale" style="background: #fefdfb; color: #1a5276;">
+          <div class="swatch-accent" style="color: #1a5276; background: #1a5276;"></div>
+          <span class="swatch-label">paperInk</span>
+        </div>
+      </div>
+      <p class="slide-caption reveal" style="text-align: center; margin-top: 1rem;">Mix presets across sections for multi-mood decks</p>
+    </div>
+  </section>
+
+  <!-- === SLIDE 10: SLIDE TYPES === -->
+  <section class="slide" id="slide-10">
+    <div class="brand-mark">08 · slide vocabulary</div>
+    <div class="slide-content" style="text-align: center;">
+      <span class="eyebrow reveal">Every slide has a type</span>
+      <h2 class="slide-title reveal">15 slide templates.<br>Right density, automatically.</h2>
+      <div class="reveal" style="margin-top: clamp(1.5rem, 3vw, 2.5rem); display: flex; flex-wrap: wrap; justify-content: center; max-width: 1000px; margin-left: auto; margin-right: auto;">
+        <span class="pill">title</span>
+        <span class="pill">section-divider</span>
+        <span class="pill highlight">content</span>
+        <span class="pill">image-focus</span>
+        <span class="pill">comparison</span>
+        <span class="pill">quote</span>
+        <span class="pill highlight">code</span>
+        <span class="pill">feature-grid</span>
+        <span class="pill">timeline</span>
+        <span class="pill highlight">metrics</span>
+        <span class="pill">meme-gif</span>
+        <span class="pill">diagram</span>
+        <span class="pill">demo-divider</span>
+        <span class="pill">audience-question</span>
+        <span class="pill">closing</span>
+      </div>
+      <p class="slide-body reveal" style="margin-top: 2rem; color: var(--text-secondary); max-width: 700px; margin-left: auto; margin-right: auto;">
+        Density limits enforced. Long content auto-splits. Min body text <strong style="color: var(--accent);">18pt</strong> — non-negotiable.
+      </p>
+    </div>
+  </section>
+
+  <!-- === SLIDE 11: DURATION MATRIX === -->
+  <section class="slide" id="slide-11">
+    <div class="brand-mark">09 · structure</div>
+    <div class="slide-content">
+      <span class="eyebrow reveal">Duration-indexed</span>
+      <h2 class="slide-title reveal">Right-sized decks.</h2>
+      <div class="grid-3" style="margin-top: clamp(1.5rem, 3vw, 2.5rem);">
+        <div class="card reveal">
+          <span class="card-num">⚡</span>
+          <h3>5 min</h3>
+          <p style="color: var(--text-primary); font-weight: 600; font-size: 1rem;">5–7 slides</p>
+          <p>Hook → 2–3 key points → CTA</p>
+        </div>
+        <div class="card reveal">
+          <span class="card-num">🎤</span>
+          <h3>15 min</h3>
+          <p style="color: var(--text-primary); font-weight: 600; font-size: 1rem;">12–18 slides</p>
+          <p>Intro → 3–4 sections → summary</p>
+        </div>
+        <div class="card reveal">
+          <span class="card-num">📣</span>
+          <h3>30 min</h3>
+          <p style="color: var(--text-primary); font-weight: 600; font-size: 1rem;">25–35 slides</p>
+          <p>Title → agenda → 5–6 sections → Q&amp;A</p>
+        </div>
+        <div class="card reveal">
+          <span class="card-num">🎯</span>
+          <h3>45 min</h3>
+          <p style="color: var(--text-primary); font-weight: 600; font-size: 1rem;">35–50 slides</p>
+          <p>Keynote structure with agenda</p>
+        </div>
+        <div class="card reveal">
+          <span class="card-num">🛠️</span>
+          <h3>60 min</h3>
+          <p style="color: var(--text-primary); font-weight: 600; font-size: 1rem;">40–60 slides</p>
+          <p>Workshop with exercises</p>
+        </div>
+        <div class="card reveal">
+          <span class="card-num">∞</span>
+          <h3>Custom</h3>
+          <p style="color: var(--text-primary); font-weight: 600; font-size: 1rem;">You pick</p>
+          <p>Override via .local.md frontmatter</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- === SLIDE 12: HTML HIGHLIGHTS === -->
+  <section class="slide" id="slide-12">
+    <div class="brand-mark">10 · html features</div>
+    <div class="slide-content">
+      <span class="eyebrow reveal">HTML generator</span>
+      <h2 class="slide-title reveal">Single-file. Viewport-fitted.</h2>
+      <div class="grid-2" style="margin-top: clamp(1rem, 2vw, 1.5rem);">
+        <div class="card reveal-left">
+          <h3>🎬 GSAP timelines</h3>
+          <p>SplitText · ScrollTrigger · spring physics · Remotion-inspired damping presets.</p>
+        </div>
+        <div class="card reveal">
+          <h3>📐 Viewport locked</h3>
+          <p><code style="font-family: var(--font-mono); color: var(--accent);">100vh/100dvh</code> · <code style="font-family: var(--font-mono); color: var(--accent);">overflow: hidden</code> · <code style="font-family: var(--font-mono); color: var(--accent);">clamp()</code> typography.</p>
+        </div>
+        <div class="card reveal-left">
+          <h3>♿ Accessible by default</h3>
+          <p><code style="font-family: var(--font-mono); color: var(--accent);">prefers-reduced-motion</code> respected · semantic HTML · CSS-only fallback.</p>
+        </div>
+        <div class="card reveal">
+          <h3>📊 Mermaid + Prism</h3>
+          <p>Flowcharts · sequence diagrams · syntax highlighting — no build step.</p>
+        </div>
+        <div class="card reveal-left">
+          <h3>✏️ Inline edit mode</h3>
+          <p><code style="font-family: var(--font-mono); color: var(--accent);">contenteditable</code> attributes let you tweak text live in the browser.</p>
+        </div>
+        <div class="card reveal">
+          <h3>📦 Zero runtime deps</h3>
+          <p>Inline CSS + JS. Open the <code style="font-family: var(--font-mono); color: var(--accent);">.html</code> anywhere. Ship.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- === SLIDE 13: PPTX HIGHLIGHTS === -->
+  <section class="slide" id="slide-13">
+    <div class="brand-mark">11 · pptx features</div>
+    <div class="slide-content">
+      <span class="eyebrow reveal">PPTX generator</span>
+      <h2 class="slide-title reveal">Editable. Measured. Validated.</h2>
+      <div class="grid-2" style="margin-top: clamp(1rem, 2vw, 1.5rem);">
+        <div class="card reveal-left">
+          <h3>🧬 PptxGenJS + Bun</h3>
+          <p>TypeScript helpers run with <code style="font-family: var(--font-mono); color: var(--accent);">npx -y bun</code>. Auto-installed first run.</p>
+        </div>
+        <div class="card reveal">
+          <h3>📏 skia-canvas metrics</h3>
+          <p><code style="font-family: var(--font-mono); color: var(--accent);">autoFontSize()</code> fits paragraphs to exact boxes using real font metrics.</p>
+        </div>
+        <div class="card reveal-left">
+          <h3>🧱 High-level builders</h3>
+          <p><code style="font-family: var(--font-mono); color: var(--accent);">addFeatureGrid</code> · <code style="font-family: var(--font-mono); color: var(--accent);">addTimeline</code> · <code style="font-family: var(--font-mono); color: var(--accent);">addMetricsRow</code> · <code style="font-family: var(--font-mono); color: var(--accent);">addComparisonTable</code>.</p>
+        </div>
+        <div class="card reveal">
+          <h3>✅ validateDeck()</h3>
+          <p>Pre-save checks: overlaps · bounds · font mins · bullet caps · speaker notes.</p>
+        </div>
+        <div class="card reveal-left">
+          <h3>💬 Speaker notes everywhere</h3>
+          <p>Every content slide gets <code style="font-family: var(--font-mono); color: var(--accent);">slide.addNotes()</code>. Enforced by Stop hook.</p>
+        </div>
+        <div class="card reveal">
+          <h3>🎨 Native shapes &amp; text</h3>
+          <p>Editable by recipients. No rasterized images. Real OOXML.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- === SLIDE 14: WORKS WITH ANY AI CLI === -->
+  <section class="slide" id="slide-14">
+    <div class="brand-mark">12 · ecosystem</div>
+    <div class="slide-content" style="text-align: center;">
+      <span class="eyebrow reveal">Bring your own agent</span>
+      <h2 class="slide-title reveal">Works wherever<br>you already code with AI.</h2>
+      <div class="grid-4" style="margin-top: clamp(1.5rem, 3vw, 2.5rem); max-width: 1000px; margin-left: auto; margin-right: auto;">
+        <div class="card reveal" style="text-align: center;">
+          <h3 style="justify-content: center;">Claude Code</h3>
+          <p>Native plugin marketplace · hooks enabled.</p>
+        </div>
+        <div class="card reveal" style="text-align: center;">
+          <h3 style="justify-content: center;">OpenCode</h3>
+          <p>Drop skills into <code style="font-family: var(--font-mono); color: var(--accent);">.claude/skills</code>.</p>
+        </div>
+        <div class="card reveal" style="text-align: center;">
+          <h3 style="justify-content: center;">Cursor</h3>
+          <p>Reference skill files as context.</p>
+        </div>
+        <div class="card reveal" style="text-align: center;">
+          <h3 style="justify-content: center;">Codex</h3>
+          <p>Invoke via SDK with skill paths.</p>
+        </div>
+      </div>
+      <p class="slide-body reveal" style="margin-top: 2rem; color: var(--text-secondary); max-width: 700px; margin-left: auto; margin-right: auto;">
+        Skills are just markdown. Any agent that reads files can drive the pipeline.
+      </p>
+    </div>
+  </section>
+
+  <!-- === SLIDE 15: CTA === -->
+  <section class="slide" id="slide-15">
+    <div class="orb"></div>
+    <div class="brand-mark">13 · ship it</div>
+    <div class="slide-content" style="text-align: center;">
+      <span class="eyebrow reveal">Your turn</span>
+      <h2 class="slide-title reveal" style="font-size: clamp(2.5rem, 7vw, 6rem);">Make something<br>beautiful.</h2>
+      <p class="slide-subtitle reveal" style="max-width: 700px; margin-left: auto; margin-right: auto;">
+        Install the plugin. Describe your talk. Ship a deck your audience will remember.
+      </p>
+      <div class="reveal" style="margin-top: clamp(1.5rem, 3vw, 2.5rem);">
+        <a href="https://github.com/proyecto26/slides-ai-plugin" class="cta" target="_blank" rel="noopener">
+          Get the plugin
+          <span class="cta-arrow">→</span>
+        </a>
+      </div>
+      <p class="slide-caption reveal" style="margin-top: clamp(2rem, 4vw, 3rem);">
+        github.com/proyecto26/slides-ai-plugin · MIT · Made with ❤ by Proyecto26
+      </p>
+    </div>
+  </section>
+
+  <nav class="nav" id="nav"></nav>
+
+  <!-- GSAP (optional enhancement) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+  <script>
+    const slides = document.querySelectorAll('.slide');
+    const nav = document.getElementById('nav');
+    const progress = document.getElementById('progress');
+    let currentSlide = 0;
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Create nav dots
+    slides.forEach((_, i) => {
+      const dot = document.createElement('button');
+      dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+      dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
+      dot.onclick = () => goToSlide(i);
+      nav.appendChild(dot);
+    });
+
+    function goToSlide(index) {
+      if (index < 0 || index >= slides.length) return;
+      currentSlide = index;
+      slides[index].scrollIntoView({ behavior: 'smooth' });
+      updateNav();
+    }
+
+    function updateNav() {
+      document.querySelectorAll('.nav-dot').forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentSlide);
+      });
+      progress.style.width = ((currentSlide + 1) / slides.length * 100) + '%';
+    }
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ' || e.key === 'PageDown') {
+        e.preventDefault();
+        goToSlide(currentSlide + 1);
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'PageUp') {
+        e.preventDefault();
+        goToSlide(currentSlide - 1);
+      } else if (e.key === 'Home') { e.preventDefault(); goToSlide(0); }
+      else if (e.key === 'End') { e.preventDefault(); goToSlide(slides.length - 1); }
+    });
+
+    // Touch/swipe navigation
+    let touchStartY = 0;
+    document.addEventListener('touchstart', (e) => { touchStartY = e.touches[0].clientY; }, { passive: true });
+    document.addEventListener('touchend', (e) => {
+      const diff = touchStartY - e.changedTouches[0].clientY;
+      if (Math.abs(diff) > 50) goToSlide(currentSlide + (diff > 0 ? 1 : -1));
+    });
+
+    // Trigger reveal animations
+    function triggerAnimations(slide) {
+      if (prefersReducedMotion) {
+        slide.querySelectorAll('.reveal, .reveal-scale, .reveal-left, .reveal-blur').forEach(el => el.classList.add('visible'));
+        return;
+      }
+      const elements = slide.querySelectorAll('.reveal, .reveal-scale, .reveal-left, .reveal-blur');
+      elements.forEach((el, i) => {
+        setTimeout(() => el.classList.add('visible'), i * 90);
+      });
+    }
+
+    // Observer for scroll-based slide tracking + animations
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const index = Array.from(slides).indexOf(entry.target);
+          currentSlide = index;
+          updateNav();
+          triggerAnimations(entry.target);
+        }
+      });
+    }, { threshold: 0.4 });
+
+    slides.forEach(slide => observer.observe(slide));
+
+    // Initial slide
+    triggerAnimations(slides[0]);
+    updateNav();
+
+    // GSAP: subtle title entrance on slide 1
+    if (window.gsap && !prefersReducedMotion) {
+      gsap.from('#slide-1 .slide-title', {
+        scale: 0.92,
+        duration: 1.2,
+        ease: 'expo.out',
+        delay: 0.1
+      });
+      gsap.from('.orb', {
+        scale: 0.5,
+        opacity: 0,
+        duration: 2,
+        ease: 'expo.out'
+      });
+    }
+  </script>
+</body>
+</html>
